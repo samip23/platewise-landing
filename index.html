@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlateWise — Your AI Kitchen Companion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --forest:#2D6A4F;--forest-dark:#1B4332;--forest-light:#40916C;--forest-lighter:#52B788;
+  --forest-lightest:#D8F3DC;--terracotta:#E76F51;--terracotta-light:#F4A261;
+  --cream:#FEFAF6;--warm-white:#FFF9F2;--sand:#F5F0EB;--charcoal:#1A1A2E;
+  --text:#2C2C2C;--text-light:#6B6B6B;--text-lighter:#9B9B9B;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--cream);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:'Playfair Display',Georgia,serif;font-weight:700;letter-spacing:-0.02em}
+a{text-decoration:none;color:inherit}
+img{max-width:100%;display:block}
+
+/* Grain overlay */
+body::after{content:'';position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity:0.025}
+
+/* Nav */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:1.25rem 2rem;display:flex;align-items:center;justify-content:space-between;transition:all 0.4s ease}
+nav.scrolled{background:rgba(254,250,246,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 1px 30px rgba(0,0,0,0.06)}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:var(--forest)}
+.nav-logo span{color:var(--terracotta)}
+.nav-links{display:flex;gap:2rem;align-items:center}
+.nav-links a{font-size:0.875rem;font-weight:600;color:var(--text-light);transition:color 0.3s}
+.nav-links a:hover{color:var(--forest)}
+.nav-cta{background:var(--forest);color:#fff;padding:0.6rem 1.5rem;border-radius:100px;font-size:0.875rem;font-weight:600;transition:all 0.3s}
+.nav-cta:hover{background:var(--forest-dark);transform:translateY(-1px);box-shadow:0 4px 20px rgba(45,106,79,0.3)}
+
+/* Hero */
+.hero{min-height:100vh;display:flex;align-items:center;position:relative;overflow:hidden;padding:8rem 2rem 4rem}
+.hero-bg{position:absolute;inset:0;overflow:hidden}
+.hero-bg::before{content:'';position:absolute;width:800px;height:800px;border-radius:50%;background:radial-gradient(circle,var(--forest-lightest) 0%,transparent 70%);top:-200px;right:-200px;opacity:0.5}
+.hero-bg::after{content:'';position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(231,111,81,0.08) 0%,transparent 70%);bottom:-100px;left:-100px}
+.hero-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;position:relative;z-index:1}
+.hero-content{max-width:560px}
+.hero-badge{display:inline-flex;align-items:center;gap:0.5rem;background:var(--forest-lightest);color:var(--forest);padding:0.5rem 1rem;border-radius:100px;font-size:0.8rem;font-weight:600;margin-bottom:2rem;letter-spacing:0.03em}
+.hero-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--forest-lighter);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(1.5)}}
+.hero h1{font-size:clamp(2.8rem,5.5vw,4.5rem);line-height:1.05;margin-bottom:1.5rem;color:var(--charcoal)}
+.hero h1 em{font-style:italic;color:var(--forest);position:relative}
+.hero h1 em::after{content:'';position:absolute;bottom:4px;left:0;right:0;height:3px;background:var(--terracotta);border-radius:2px;opacity:0.6}
+.hero-desc{font-size:1.15rem;line-height:1.7;color:var(--text-light);margin-bottom:2.5rem;max-width:460px}
+.hero-ctas{display:flex;gap:1rem;flex-wrap:wrap}
+.btn-primary{display:inline-flex;align-items:center;gap:0.5rem;background:var(--forest);color:#fff;padding:1rem 2rem;border-radius:16px;font-size:1rem;font-weight:600;transition:all 0.3s;border:none;cursor:pointer}
+.btn-primary:hover{background:var(--forest-dark);transform:translateY(-2px);box-shadow:0 8px 30px rgba(45,106,79,0.25)}
+.btn-secondary{display:inline-flex;align-items:center;gap:0.5rem;background:transparent;color:var(--text);padding:1rem 2rem;border-radius:16px;font-size:1rem;font-weight:600;border:2px solid var(--sand);transition:all 0.3s;cursor:pointer}
+.btn-secondary:hover{border-color:var(--forest-lighter);color:var(--forest);transform:translateY(-2px)}
+.hero-stats{display:flex;gap:2.5rem;margin-top:3rem;padding-top:2rem;border-top:1px solid rgba(0,0,0,0.06)}
+.hero-stat strong{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--forest);display:block}
+.hero-stat span{font-size:0.8rem;color:var(--text-lighter);font-weight:500;letter-spacing:0.03em;text-transform:uppercase}
+
+/* Phone mockup */
+.hero-visual{position:relative;display:flex;justify-content:center;align-items:center}
+.phone-frame{width:280px;height:580px;background:var(--charcoal);border-radius:40px;padding:12px;box-shadow:0 40px 80px rgba(0,0,0,0.15),0 0 0 1px rgba(255,255,255,0.1) inset;position:relative;transform:perspective(1000px) rotateY(-8deg) rotateX(2deg)}
+.phone-screen{width:100%;height:100%;background:linear-gradient(160deg,var(--forest-lightest),#fff 40%,var(--warm-white));border-radius:30px;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
+.phone-screen-content{text-align:center;padding:1.5rem;position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding-top:40px}
+.phone-screen-content .scan-icon{font-size:3rem;margin-bottom:0.5rem}
+.phone-screen-content h3{font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;color:var(--forest);margin-bottom:0.4rem}
+.phone-screen-content p{font-size:0.72rem;color:var(--text-lighter)}
+/* Cycling screen animation */
+.app-screen{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;transition:opacity 0.6s ease,transform 0.6s ease;transform:scale(0.95);pointer-events:none;padding:44px 16px 16px}
+.app-screen.active{opacity:1;transform:scale(1);pointer-events:auto}
+.app-screen-header{font-family:'DM Sans',sans-serif;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-lighter);margin-bottom:0.5rem;text-align:left}
+.app-screen-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--charcoal);text-align:left;margin-bottom:0.75rem;line-height:1.2}
+.mock-item{display:flex;align-items:center;gap:8px;background:#fff;border-radius:10px;padding:8px 10px;margin-bottom:6px;box-shadow:0 1px 4px rgba(0,0,0,0.04);font-size:0.7rem;text-align:left}
+.mock-item .mi-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.85rem;flex-shrink:0}
+.mock-item .mi-info{flex:1}
+.mock-item .mi-name{font-weight:600;color:var(--text)}
+.mock-item .mi-sub{font-size:0.6rem;color:var(--text-lighter)}
+.mock-item .mi-badge{font-size:0.55rem;font-weight:700;padding:2px 6px;border-radius:20px;white-space:nowrap}
+.mock-btn{background:var(--forest);color:#fff;border:none;border-radius:8px;padding:8px;font-size:0.65rem;font-weight:700;width:100%;margin-top:6px;cursor:default}
+.mock-progress{height:4px;background:var(--sand);border-radius:2px;overflow:hidden;margin:6px 0}
+.mock-progress-fill{height:100%;border-radius:2px;transition:width 0.6s ease}
+.mock-stat-row{display:flex;gap:6px;margin-bottom:6px}
+.mock-stat{flex:1;background:#fff;border-radius:10px;padding:8px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
+.mock-stat .ms-val{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--forest)}
+.mock-stat .ms-label{font-size:0.5rem;color:var(--text-lighter);text-transform:uppercase;letter-spacing:0.05em}
+/* Screen indicator dots */
+.screen-dots{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:5}
+.screen-dot{width:5px;height:5px;border-radius:50%;background:var(--text-lighter);opacity:0.3;transition:all 0.3s}
+.screen-dot.active{opacity:1;background:var(--forest);width:16px;border-radius:3px}
+.phone-notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:120px;height:28px;background:var(--charcoal);border-radius:0 0 20px 20px}
+.float-card{position:absolute;background:#fff;border-radius:16px;padding:1rem 1.25rem;box-shadow:0 8px 40px rgba(0,0,0,0.08);display:flex;align-items:center;gap:0.75rem;animation:float 6s ease-in-out infinite}
+.float-card-1{top:60px;right:-40px;animation-delay:0s}
+.float-card-2{bottom:80px;left:-50px;animation-delay:2s}
+.float-card-3{top:220px;left:-30px;animation-delay:4s}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.float-card .fc-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+.float-card .fc-text{font-size:0.8rem;font-weight:600;color:var(--text)}
+.float-card .fc-sub{font-size:0.7rem;color:var(--text-lighter);font-weight:400}
+.fc-green{background:var(--forest-lightest)}
+.fc-orange{background:rgba(231,111,81,0.1)}
+.fc-blue{background:rgba(69,123,157,0.1)}
+
+/* Section common */
+section{padding:6rem 2rem}
+.section-inner{max-width:1100px;margin:0 auto}
+.section-label{font-size:0.75rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--terracotta);margin-bottom:1rem}
+.section-title{font-size:clamp(2rem,4vw,3rem);line-height:1.15;margin-bottom:1rem}
+.section-desc{font-size:1.05rem;line-height:1.7;color:var(--text-light);max-width:540px}
+
+/* Features */
+.features{background:var(--warm-white)}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem;margin-top:3.5rem}
+.feature-card{background:#fff;border-radius:20px;padding:2rem;transition:all 0.4s ease;border:1px solid rgba(0,0,0,0.04);position:relative;overflow:hidden}
+.feature-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,0.06);border-color:var(--forest-lightest)}
+.feature-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--forest),var(--forest-lighter));transform:scaleX(0);transform-origin:left;transition:transform 0.4s ease}
+.feature-card:hover::before{transform:scaleX(1)}
+.feature-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:1.25rem}
+.feature-card h3{font-family:'DM Sans',sans-serif;font-size:1.1rem;font-weight:700;margin-bottom:0.5rem}
+.feature-card p{font-size:0.9rem;line-height:1.6;color:var(--text-light)}
+
+/* How it works */
+.how-it-works{background:var(--forest-dark);color:#fff;position:relative;overflow:hidden}
+.how-it-works::before{content:'';position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(82,183,136,0.15),transparent);top:-200px;right:-100px}
+.how-it-works .section-label{color:var(--forest-lighter)}
+.how-it-works .section-title{color:#fff}
+.how-it-works .section-desc{color:rgba(255,255,255,0.6)}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:2rem;margin-top:3.5rem}
+.step{text-align:center;position:relative}
+.step-num{font-family:'Playfair Display',serif;font-size:4rem;font-weight:900;color:rgba(255,255,255,0.08);position:absolute;top:-10px;left:50%;transform:translateX(-50%)}
+.step-icon{width:64px;height:64px;border-radius:20px;background:rgba(255,255,255,0.08);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto 1.25rem;position:relative;z-index:1;border:1px solid rgba(255,255,255,0.1)}
+.step h3{font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:700;margin-bottom:0.5rem}
+.step p{font-size:0.85rem;line-height:1.6;color:rgba(255,255,255,0.5)}
+
+/* Testimonials */
+.testimonials{background:var(--cream)}
+.testimonial-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:3.5rem}
+.testimonial{background:#fff;border-radius:20px;padding:2rem;border:1px solid rgba(0,0,0,0.04)}
+.testimonial-stars{color:var(--terracotta-light);font-size:0.9rem;margin-bottom:1rem;letter-spacing:2px}
+.testimonial q{font-size:0.95rem;line-height:1.7;color:var(--text);display:block;margin-bottom:1.5rem;font-style:italic}
+.testimonial-author{display:flex;align-items:center;gap:0.75rem}
+.testimonial-avatar{width:40px;height:40px;border-radius:50%;background:var(--forest-lightest);display:flex;align-items:center;justify-content:center;font-size:1rem}
+.testimonial-name{font-weight:700;font-size:0.85rem}
+.testimonial-role{font-size:0.75rem;color:var(--text-lighter)}
+
+/* Pricing */
+.pricing{background:var(--warm-white)}
+.pricing-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:2rem;max-width:800px;margin:3.5rem auto 0}
+.price-card{background:#fff;border-radius:24px;padding:2.5rem;border:2px solid transparent;transition:all 0.3s;position:relative}
+.price-card.featured{border-color:var(--forest);box-shadow:0 12px 40px rgba(45,106,79,0.12)}
+.price-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--terracotta);color:#fff;padding:0.3rem 1.2rem;border-radius:100px;font-size:0.75rem;font-weight:700;letter-spacing:0.05em}
+.price-card h3{font-family:'DM Sans',sans-serif;font-size:1.1rem;font-weight:700;margin-bottom:0.5rem}
+.price-card .price{font-family:'Playfair Display',serif;font-size:3rem;font-weight:900;color:var(--forest);margin:1rem 0 0.25rem}
+.price-card .price span{font-size:1rem;font-weight:400;color:var(--text-lighter)}
+.price-card .price-annual{font-size:0.85rem;color:var(--text-lighter);margin-bottom:1.5rem}
+.price-features{list-style:none;margin-bottom:2rem}
+.price-features li{font-size:0.9rem;padding:0.5rem 0;display:flex;align-items:center;gap:0.5rem;color:var(--text)}
+.price-features li::before{content:'✓';color:var(--forest-lighter);font-weight:700}
+.price-btn{display:block;text-align:center;padding:1rem;border-radius:14px;font-weight:700;font-size:0.95rem;transition:all 0.3s;border:none;cursor:pointer;width:100%}
+.price-btn-primary{background:var(--forest);color:#fff}
+.price-btn-primary:hover{background:var(--forest-dark);transform:translateY(-2px);box-shadow:0 8px 25px rgba(45,106,79,0.25)}
+.price-btn-secondary{background:var(--sand);color:var(--text)}
+.price-btn-secondary:hover{background:var(--forest-lightest);color:var(--forest)}
+
+/* CTA */
+.final-cta{background:linear-gradient(135deg,var(--forest-dark),var(--forest));color:#fff;text-align:center;padding:6rem 2rem;position:relative;overflow:hidden}
+.final-cta::before{content:'';position:absolute;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,0.06),transparent);top:-100px;left:-100px}
+.final-cta h2{font-size:clamp(2rem,4vw,3.2rem);margin-bottom:1rem}
+.final-cta p{font-size:1.1rem;color:rgba(255,255,255,0.7);margin-bottom:2.5rem;max-width:500px;margin-left:auto;margin-right:auto}
+.final-cta .btn-primary{background:#fff;color:var(--forest);font-size:1.1rem;padding:1.1rem 2.5rem}
+.final-cta .btn-primary:hover{box-shadow:0 8px 30px rgba(0,0,0,0.2);transform:translateY(-2px)}
+
+/* Footer */
+footer{background:var(--charcoal);color:rgba(255,255,255,0.5);padding:3rem 2rem;text-align:center}
+footer .footer-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
+footer .footer-logo{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:#fff}
+footer .footer-logo span{color:var(--forest-lighter)}
+footer .footer-links{display:flex;gap:1.5rem}
+footer .footer-links a{font-size:0.85rem;transition:color 0.3s}
+footer .footer-links a:hover{color:var(--forest-lighter)}
+footer .footer-copy{width:100%;text-align:center;margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,0.06);font-size:0.8rem}
+
+/* Animations */
+.reveal{opacity:0;transform:translateY(30px);transition:all 0.7s cubic-bezier(0.16,1,0.3,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-delay-1{transition-delay:0.1s}
+.reveal-delay-2{transition-delay:0.2s}
+.reveal-delay-3{transition-delay:0.3s}
+.reveal-delay-4{transition-delay:0.4s}
+.reveal-delay-5{transition-delay:0.5s}
+.reveal-delay-6{transition-delay:0.6s}
+
+/* Responsive */
+@media(max-width:900px){
+  .hero-inner{grid-template-columns:1fr;text-align:center}
+  .hero-content{max-width:100%}
+  .hero-desc{margin-left:auto;margin-right:auto}
+  .hero-ctas{justify-content:center}
+  .hero-stats{justify-content:center}
+  .hero-visual{margin-top:3rem}
+  .phone-frame{transform:none}
+  .float-card-1{right:0}
+  .float-card-2{left:0}
+  .float-card-3{display:none}
+  .nav-links{display:none}
+  .steps{grid-template-columns:repeat(2,1fr)}
+  .testimonial-grid{grid-template-columns:1fr}
+  .pricing-grid{grid-template-columns:1fr;max-width:400px}
+}
+@media(max-width:600px){
+  .hero{padding:6rem 1.25rem 3rem}
+  section{padding:4rem 1.25rem}
+  .hero h1{font-size:2.2rem}
+  .steps{grid-template-columns:1fr}
+  .hero-stats{gap:1.5rem}
+  .phone-frame{width:240px;height:490px}
+}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav id="nav">
+  <a href="#" class="nav-logo">Fridge<span>Chef</span></a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#how">How It Works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#" class="nav-cta">Download Free</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span></span> AI-Powered Kitchen Companion
+      </div>
+      <h1>
+        Snap your fridge.<br>
+        Cook <em>smarter</em>.
+      </h1>
+      <p class="hero-desc">
+        PlateWise scans your fridge, generates personalized recipes that match your nutrition goals, builds your meal plan, and even tracks what goes to waste. Your entire kitchen — in one app.
+      </p>
+      <div class="hero-ctas">
+        <a href="#" class="btn-primary">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+          App Store
+        </a>
+        <a href="#" class="btn-secondary">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 01-.61-.92V2.734a1 1 0 01.609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.199l2.302 2.302a1 1 0 010 1.38l-2.302 2.302L15.396 13l2.302-2.492zM5.864 2.658L16.8 8.99l-2.302 2.302L5.864 2.658z"/></svg>
+          Google Play
+        </a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <strong>3-in-1</strong>
+          <span>Scanner Modes</span>
+        </div>
+        <div class="hero-stat">
+          <strong>15%</strong>
+          <span>Nutrition Accuracy</span>
+        </div>
+        <div class="hero-stat">
+          <strong>7-Day</strong>
+          <span>AI Meal Plans</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="phone-frame">
+        <div class="phone-screen">
+          <div class="phone-notch"></div>
+
+          <!-- Screen 1: Scanner -->
+          <div class="app-screen active" data-screen="0">
+            <div class="app-screen-header">Fridge Scanner</div>
+            <div class="app-screen-title">Scanning...</div>
+            <div style="text-align:center;font-size:3rem;margin:0.5rem 0">📸</div>
+            <div class="mock-progress"><div class="mock-progress-fill" style="width:72%;background:var(--forest-lighter)"></div></div>
+            <div style="font-size:0.65rem;color:var(--text-lighter);text-align:center;margin-bottom:8px">Processing photo 3 of 4...</div>
+            <div class="mock-item"><div class="mi-icon" style="background:var(--forest-lightest)">🥬</div><div class="mi-info"><div class="mi-name">Spinach</div><div class="mi-sub">200g · Produce</div></div><div class="mi-badge" style="background:var(--forest-lightest);color:var(--forest)">95%</div></div>
+            <div class="mock-item"><div class="mi-icon" style="background:rgba(231,111,81,0.1)">🍗</div><div class="mi-info"><div class="mi-name">Chicken Breast</div><div class="mi-sub">450g · Protein</div></div><div class="mi-badge" style="background:var(--forest-lightest);color:var(--forest)">92%</div></div>
+            <div class="mock-item"><div class="mi-icon" style="background:rgba(69,123,157,0.1)">🥛</div><div class="mi-info"><div class="mi-name">Milk</div><div class="mi-sub">1L · Dairy</div></div><div class="mi-badge" style="background:#FFF3CD;color:#856404">78%</div></div>
+          </div>
+
+          <!-- Screen 2: Recipes -->
+          <div class="app-screen" data-screen="1">
+            <div class="app-screen-header">Recipes · Lunch</div>
+            <div class="app-screen-title">Freshly Curated</div>
+            <div class="mock-item" style="padding:10px"><div class="mi-icon" style="background:var(--forest-lightest)">🥗</div><div class="mi-info"><div class="mi-name">Buddha Bowl</div><div class="mi-sub">420 cal · 24g protein · 35 min</div></div><div class="mi-badge" style="background:var(--forest-lightest);color:var(--forest)">92%</div></div>
+            <div class="mock-item" style="padding:10px"><div class="mi-icon" style="background:rgba(231,111,81,0.1)">🍝</div><div class="mi-info"><div class="mi-name">Garlic Chicken Pasta</div><div class="mi-sub">580 cal · 38g protein · 25 min</div></div><div class="mi-badge" style="background:var(--forest-lightest);color:var(--forest)">87%</div></div>
+            <div class="mock-item" style="padding:10px"><div class="mi-icon" style="background:rgba(69,123,157,0.1)">🥙</div><div class="mi-info"><div class="mi-name">Spinach & Feta Wrap</div><div class="mi-sub">390 cal · 22g protein · 15 min</div></div><div class="mi-badge" style="background:var(--forest-lightest);color:var(--forest)">81%</div></div>
+            <div class="mock-btn">✨ Generate with AI</div>
+          </div>
+
+          <!-- Screen 3: Meal Plan -->
+          <div class="app-screen" data-screen="2">
+            <div class="app-screen-header">Meal Plan</div>
+            <div class="app-screen-title">This Week</div>
+            <div class="mock-stat-row">
+              <div class="mock-stat"><div class="ms-val">1,850</div><div class="ms-label">Cal/day</div></div>
+              <div class="mock-stat"><div class="ms-val">132g</div><div class="ms-label">Protein</div></div>
+            </div>
+            <div class="mock-item"><div class="mi-icon" style="background:#FFF3CD">☀️</div><div class="mi-info"><div class="mi-name">Monday</div><div class="mi-sub">3 meals · 1,920 cal</div></div><div style="font-size:0.7rem;color:var(--text-lighter)">▾</div></div>
+            <div class="mock-item"><div class="mi-icon" style="background:var(--forest-lightest)">☀️</div><div class="mi-info"><div class="mi-name">Tuesday</div><div class="mi-sub">3 meals · 1,780 cal</div></div><div style="font-size:0.7rem;color:var(--text-lighter)">▾</div></div>
+            <div class="mock-item"><div class="mi-icon" style="background:rgba(69,123,157,0.1)">☀️</div><div class="mi-info"><div class="mi-name">Wednesday</div><div class="mi-sub">3 meals · 1,850 cal</div></div><div style="font-size:0.7rem;color:var(--text-lighter)">▾</div></div>
+            <div class="mock-btn" style="background:var(--forest-lightest);color:var(--forest)">🛒 Add Missing to Shopping</div>
+          </div>
+
+          <!-- Screen 4: Shopping -->
+          <div class="app-screen" data-screen="3">
+            <div class="app-screen-header">Shopping List</div>
+            <div class="app-screen-title">Kitchen Prep</div>
+            <div class="mock-item"><div style="width:18px;height:18px;border:2px solid var(--forest);border-radius:4px;flex-shrink:0"></div><div class="mi-info"><div class="mi-name">Tahini</div><div class="mi-sub">For Buddha Bowl</div></div></div>
+            <div class="mock-item"><div style="width:18px;height:18px;border:2px solid var(--forest);border-radius:4px;flex-shrink:0"></div><div class="mi-info"><div class="mi-name">Fresh Basil</div><div class="mi-sub">For Green Goddess</div></div></div>
+            <div class="mock-item" style="opacity:0.5"><div style="width:18px;height:18px;background:var(--forest);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.6rem">✓</div><div class="mi-info"><div class="mi-name" style="text-decoration:line-through">Honey</div><div class="mi-sub">Checked</div></div></div>
+            <div class="mock-btn">🏠 Add 1 to Pantry</div>
+          </div>
+
+          <!-- Screen 5: Nutrition -->
+          <div class="app-screen" data-screen="4">
+            <div class="app-screen-header">Today's Intake</div>
+            <div class="app-screen-title">Nutrition</div>
+            <div class="mock-stat-row">
+              <div class="mock-stat"><div class="ms-val">1,420</div><div class="ms-label">of 2,200 cal</div></div>
+              <div class="mock-stat"><div class="ms-val">98g</div><div class="ms-label">of 160g prot</div></div>
+            </div>
+            <div class="mock-progress" style="margin:4px 0 2px"><div class="mock-progress-fill" style="width:64%;background:var(--forest-lighter)"></div></div>
+            <div style="font-size:0.55rem;color:var(--text-lighter);margin-bottom:10px">64% of daily calories</div>
+            <div class="mock-item"><div class="mi-icon" style="background:var(--forest-lightest)">🌅</div><div class="mi-info"><div class="mi-name">Breakfast · 20%</div><div class="mi-sub">440 kcal target</div></div></div>
+            <div class="mock-item"><div class="mi-icon" style="background:rgba(231,111,81,0.1)">🥗</div><div class="mi-info"><div class="mi-name">Lunch · 30%</div><div class="mi-sub">660 kcal target</div></div></div>
+            <div class="mock-item"><div class="mi-icon" style="background:rgba(69,123,157,0.1)">🍽️</div><div class="mi-info"><div class="mi-name">Dinner · 35%</div><div class="mi-sub">770 kcal target</div></div></div>
+          </div>
+
+          <!-- Screen 6: Waste Tracking -->
+          <div class="app-screen" data-screen="5">
+            <div class="app-screen-header">Food Waste</div>
+            <div class="app-screen-title">This Month</div>
+            <div class="mock-stat-row">
+              <div class="mock-stat"><div class="ms-val" style="color:var(--terracotta)">3</div><div class="ms-label">Items wasted</div></div>
+              <div class="mock-stat"><div class="ms-val" style="color:var(--terracotta)">~$14</div><div class="ms-label">Est. cost</div></div>
+            </div>
+            <div style="font-size:0.6rem;font-weight:600;color:var(--text);margin:8px 0 4px;text-align:left">Wasted Items</div>
+            <div class="mock-item"><div class="mi-icon" style="background:rgba(231,111,81,0.1)">🥬</div><div class="mi-info"><div class="mi-name">Spinach — expired</div><div class="mi-sub">200g · ~$3</div></div></div>
+            <div class="mock-item"><div class="mi-icon" style="background:rgba(231,111,81,0.1)">🍓</div><div class="mi-info"><div class="mi-name">Berries — spoiled</div><div class="mi-sub">150g · ~$5</div></div></div>
+            <div style="font-size:0.6rem;color:var(--forest);font-weight:600;text-align:center;margin-top:8px">↓ 40% less waste than last month</div>
+          </div>
+
+          <!-- Navigation dots -->
+          <div class="screen-dots">
+            <div class="screen-dot active" data-dot="0"></div>
+            <div class="screen-dot" data-dot="1"></div>
+            <div class="screen-dot" data-dot="2"></div>
+            <div class="screen-dot" data-dot="3"></div>
+            <div class="screen-dot" data-dot="4"></div>
+            <div class="screen-dot" data-dot="5"></div>
+          </div>
+        </div>
+      </div>
+      <div class="float-card float-card-1">
+        <div class="fc-icon fc-green">🥬</div>
+        <div><div class="fc-text">Spinach detected</div><div class="fc-sub">95% confidence</div></div>
+      </div>
+      <div class="float-card float-card-2">
+        <div class="fc-icon fc-orange">🍗</div>
+        <div><div class="fc-text">Chicken Breast</div><div class="fc-sub">450g · Fresh</div></div>
+      </div>
+      <div class="float-card float-card-3">
+        <div class="fc-icon fc-blue">📊</div>
+        <div><div class="fc-text">92% Match</div><div class="fc-sub">Buddha Bowl recipe</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="features" id="features">
+  <div class="section-inner">
+    <div class="section-label reveal">Features</div>
+    <h2 class="section-title reveal">Everything your kitchen<br>has been missing.</h2>
+    <p class="section-desc reveal">One app that connects what's in your fridge to what ends up on your plate — powered by AI that actually understands food.</p>
+    <div class="features-grid">
+      <div class="feature-card reveal reveal-delay-1">
+        <div class="feature-icon" style="background:var(--forest-lightest)">📷</div>
+        <h3>AI Fridge Scanner</h3>
+        <p>Snap a photo of your fridge — our AI identifies every ingredient with confidence scores, quantities, and categories. Also scans receipts and barcodes.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-2">
+        <div class="feature-icon" style="background:rgba(231,111,81,0.1)">🍳</div>
+        <h3>Smart Recipes</h3>
+        <p>Get personalized recipes that match your exact ingredients AND hit your nutrition targets within 15% tolerance. Breakfast, lunch, dinner, or snack.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-3">
+        <div class="feature-icon" style="background:rgba(69,123,157,0.1)">📅</div>
+        <h3>7-Day Meal Plans</h3>
+        <p>AI generates a full week of meals with per-meal calorie targeting. Customize your breakfast/lunch/dinner/snack calorie split.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-4">
+        <div class="feature-icon" style="background:var(--forest-lightest)">🛒</div>
+        <h3>Smart Shopping</h3>
+        <p>One tap adds all missing recipe ingredients to your list. Smart reorder suggestions based on your purchase patterns. Check items and add to pantry.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-5">
+        <div class="feature-icon" style="background:rgba(244,162,97,0.1)">🗑️</div>
+        <h3>Food Waste Tracking</h3>
+        <p>Know exactly what you're wasting and how much it costs. Auto-detects expired items, tracks monthly waste, and suggests recipes to use things up.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-6">
+        <div class="feature-icon" style="background:rgba(69,123,157,0.1)">👨‍👩‍👧‍👦</div>
+        <h3>Household Sharing</h3>
+        <p>Share your pantry and shopping list with family members via invite code. Everyone sees the same inventory in real-time. Powered by cloud sync.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How It Works -->
+<section class="how-it-works" id="how">
+  <div class="section-inner">
+    <div class="section-label reveal">How It Works</div>
+    <h2 class="section-title reveal">From fridge to plate<br>in four steps.</h2>
+    <p class="section-desc reveal">The complete kitchen loop — no other app connects all four steps.</p>
+    <div class="steps">
+      <div class="step reveal reveal-delay-1">
+        <div class="step-num">01</div>
+        <div class="step-icon">📸</div>
+        <h3>Scan</h3>
+        <p>Take photos of your fridge, scan receipts, or use the barcode scanner. AI detects everything.</p>
+      </div>
+      <div class="step reveal reveal-delay-2">
+        <div class="step-num">02</div>
+        <div class="step-icon">🍽️</div>
+        <h3>Cook</h3>
+        <p>Get AI recipes matching your ingredients and goals. Step-by-step cooking mode keeps your screen on.</p>
+      </div>
+      <div class="step reveal reveal-delay-3">
+        <div class="step-num">03</div>
+        <div class="step-icon">🔄</div>
+        <h3>Update</h3>
+        <p>Pantry auto-updates after cooking. Used ingredients are deducted. Leftovers get new recipe ideas.</p>
+      </div>
+      <div class="step reveal reveal-delay-4">
+        <div class="step-num">04</div>
+        <div class="step-icon">🛒</div>
+        <h3>Restock</h3>
+        <p>Missing items go to your shopping list. Smart suggestions remind you what to buy. Check off and add to pantry.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials -->
+<section class="testimonials">
+  <div class="section-inner">
+    <div class="section-label reveal">What People Say</div>
+    <h2 class="section-title reveal">Loved by home cooks<br>everywhere.</h2>
+    <div class="testimonial-grid">
+      <div class="testimonial reveal reveal-delay-1">
+        <div class="testimonial-stars">★★★★★</div>
+        <q>I used to throw away so much food. Now I scan my fridge, get recipes that use exactly what I have, and my waste is down 60%. The meal planning is incredible.</q>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">👩‍🍳</div>
+          <div>
+            <div class="testimonial-name">Sarah M.</div>
+            <div class="testimonial-role">Home cook, family of 4</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial reveal reveal-delay-2">
+        <div class="testimonial-stars">★★★★★</div>
+        <q>The nutrition targeting is what sold me. I set my protein goal and every recipe it generates actually hits my macros. No more guessing. The 15% tolerance is perfect.</q>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">💪</div>
+          <div>
+            <div class="testimonial-name">James K.</div>
+            <div class="testimonial-role">Fitness enthusiast</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial reveal reveal-delay-3">
+        <div class="testimonial-stars">★★★★★</div>
+        <q>My wife and I share a household — we both see the same pantry and shopping list. No more buying duplicates. The barcode scanner is ridiculously fast.</q>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">👨‍👩‍👧</div>
+          <div>
+            <div class="testimonial-name">David & Lisa R.</div>
+            <div class="testimonial-role">Shared household</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing -->
+<section class="pricing" id="pricing">
+  <div class="section-inner" style="text-align:center">
+    <div class="section-label reveal">Pricing</div>
+    <h2 class="section-title reveal">Start free. Upgrade<br>when you're hooked.</h2>
+    <p class="section-desc reveal" style="margin:0 auto">No credit card required. Try every feature for 7 days free.</p>
+    <div class="pricing-grid">
+      <div class="price-card reveal reveal-delay-1">
+        <h3>Free</h3>
+        <div class="price">$0<span>/forever</span></div>
+        <div class="price-annual">&nbsp;</div>
+        <ul class="price-features">
+          <li>Manual pantry management</li>
+          <li>Basic recipe browsing</li>
+          <li>Shopping list</li>
+          <li>Nutrition goal setting</li>
+          <li>5 scans per month</li>
+        </ul>
+        <button class="price-btn price-btn-secondary">Get Started</button>
+      </div>
+      <div class="price-card featured reveal reveal-delay-2">
+        <div class="price-badge">Most Popular</div>
+        <h3>Pro</h3>
+        <div class="price">$4.99<span>/month</span></div>
+        <div class="price-annual">or $39.99/year (save 33%)</div>
+        <ul class="price-features">
+          <li>Unlimited AI scanning</li>
+          <li>AI recipe generation</li>
+          <li>7-day meal planning</li>
+          <li>AI recipe images</li>
+          <li>Food waste tracking</li>
+          <li>Household sharing</li>
+          <li>Smart reorder suggestions</li>
+          <li>Priority support</li>
+        </ul>
+        <button class="price-btn price-btn-primary">Start 7-Day Free Trial</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Final CTA -->
+<section class="final-cta">
+  <h2 class="reveal">Your kitchen, reimagined.</h2>
+  <p class="reveal">Join thousands of home cooks who stopped wasting food and started cooking smarter. It takes 30 seconds to scan your first fridge.</p>
+  <a href="#" class="btn-primary reveal">Download PlateWise Free</a>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">Fridge<span>Chef</span></div>
+    <div class="footer-links">
+      <a href="privacy-policy.html">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Support</a>
+      <a href="#">Contact</a>
+    </div>
+    <div class="footer-copy">© 2026 PlateWise. All rights reserved. Made with 🥬 and AI.</div>
+  </div>
+</footer>
+
+<script>
+// Nav scroll effect
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 50);
+});
+
+// Reveal on scroll
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+reveals.forEach(el => observer.observe(el));
+
+// Phone screen cycling
+const screens = document.querySelectorAll('.app-screen');
+const dots = document.querySelectorAll('.screen-dot');
+let currentScreen = 0;
+const totalScreens = screens.length;
+
+function showScreen(index) {
+  screens.forEach(s => s.classList.remove('active'));
+  dots.forEach(d => d.classList.remove('active'));
+  screens[index].classList.add('active');
+  dots[index].classList.add('active');
+  currentScreen = index;
+}
+
+// Auto-cycle every 3.5 seconds
+setInterval(() => {
+  showScreen((currentScreen + 1) % totalScreens);
+}, 3500);
+
+// Click dots to navigate
+dots.forEach(dot => {
+  dot.addEventListener('click', () => {
+    showScreen(parseInt(dot.dataset.dot));
+  });
+});
+</script>
+</body>
+</html>
